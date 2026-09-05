@@ -66,14 +66,14 @@ python /mnt/e/Projects/ai-systems-lab/benchmark_serving.py --concurrency 5 --tot
 
 | Concurrency Tier | Completed Requests | System Throughput (tok/s) | P50 TTFT (ms) | P90 TTFT (ms) | Mean ITL (ms) | Scaling Efficiency |
 | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| **1 stream** | 20 / 20 (100%) | **67.0 tok/s** | **25.7 ms** | 34.4 ms | 14.6 ms | 1.0x (Baseline) |
-| **5 streams** | 20 / 20 (100%) | **303.5 tok/s** | **53.8 ms** | 70.0 ms | 16.1 ms | **4.5x** |
-| **10 streams** | 20 / 20 (100%) | **292.1 tok/s** | 2,312.2 ms | 4,520.9 ms | 16.4 ms | **4.4x** |
-| **15 streams** | 20 / 20 (100%) | **600.6 tok/s** | **139.6 ms** | 142.1 ms | 16.1 ms | **9.0x** |
-| **20 streams (Peak)** | 20 / 20 (100%) | **814.8 tok/s** | **160.8 ms** | 192.4 ms | 23.4 ms | **12.2x (Peak)** |
+| **1 stream** | 20 / 20 (100%) | **57.2 tok/s** | **38.7 ms** | 89.0 ms | 17.2 ms | 1.0x (Baseline) |
+| **5 streams** | 20 / 20 (100%) | **258.0 tok/s** | **70.5 ms** | 634.6 ms | 17.9 ms | **4.51x** |
+| **10 streams** | 20 / 20 (100%) | **476.1 tok/s** | **184.4 ms** | 232.7 ms | 19.5 ms | **8.32x** |
+| **15 streams** | 20 / 20 (100%) | **451.2 tok/s** | **237.5 ms** | 239.8 ms | 21.1 ms | **7.89x** |
+| **20 streams (Peak)** | 20 / 20 (100%) | **592.0 tok/s** | **470.9 ms** | 481.4 ms | 30.2 ms | **10.35x (Peak)** |
 
 > **Key Architectural Takeaways:**
-> 1. **12.2x Throughput Amortization**: As concurrency scaled from 1 to 20 streams, system throughput increased from **67 tok/s to 814.8 tok/s** by saturating Ampere memory bus bandwidth without GPU compute stalls.
-> 2. **Prefix Cache Hit Rate (86.8%)**: Repetitive system prompts bypassed prefill computation entirely via vLLM's Automatic Prefix Caching (APC), dropping TTFT down to 25.7 ms on cold single-stream hits.
-> 3. **Zero OOMs / Zero Packet Loss**: Handled 100/100 requests flawlessly within 12GB VRAM headroom using 67,440-token PagedAttention pools.
+> 1. **10.35x Throughput Amortization**: As concurrency scaled from 1 to 20 streams, system throughput increased from **57.2 tok/s to 592.0 tok/s** (active burst client rate: 2,560 tokens in 4.32s; server 10s window logged at 486.7 tok/s) by amortizing memory bus weight loading across batch dimensions.
+> 2. **Prefix Cache Hit Rate (87.1%)**: Repetitive prompt tokens hit vLLM's Radix-tree Automatic Prefix Caching (APC) (`task-2127.log:L193`), bypassing prefill computation and yielding sub-40ms P50 TTFT on cold single-stream hits.
+> 3. **Zero OOMs / Zero Packet Loss**: Handled 100/100 requests flawlessly within 12GB VRAM headroom using 67,440-token PagedAttention pools (peak KV usage only 3.4%).
 

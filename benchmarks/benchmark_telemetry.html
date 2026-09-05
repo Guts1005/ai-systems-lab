@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>vLLM Benchmark Telemetry — RTX 3060 12GB</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #080b10;
+    color: #c9d1d9;
+    font-family: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Menlo, Consolas, monospace;
+    padding: 24px;
+    width: 1200px;
+    height: 675px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+    border: 1px solid #1c2128;
+  }
+
+  /* Telemetry Header */
+  .header {
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 12px;
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .system-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f0f6fc;
+    letter-spacing: 0.5px;
+  }
+  .system-title span {
+    color: #eab308; /* Single Accent: Amber */
+  }
+  .system-meta {
+    font-size: 11px;
+    color: #6e7681;
+  }
+  .cmd-line {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #8b949e;
+    display: flex;
+    justify-content: space-between;
+  }
+  .cmd-line code {
+    color: #c9d1d9;
+  }
+
+  /* Metric Panels */
+  .grid-panels {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 12px 0;
+  }
+  .panel {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    padding: 12px 14px;
+  }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .panel-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #6e7681;
+    font-weight: 700;
+  }
+  .panel-source {
+    font-size: 9px;
+    color: #8b949e;
+    font-family: inherit;
+  }
+  .panel-val {
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #f0f6fc;
+  }
+  .panel-val.accent {
+    color: #eab308; /* Single Accent: Amber */
+  }
+  .panel-val span {
+    font-size: 13px;
+    font-weight: 400;
+    color: #6e7681;
+  }
+  .panel-sub {
+    font-size: 10px;
+    color: #8b949e;
+    margin-top: 6px;
+    line-height: 1.3;
+    border-top: 1px solid #161b22;
+    padding-top: 5px;
+  }
+  .panel-sub code {
+    color: #6e7681;
+  }
+
+  /* Table */
+  .table-panel {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    flex-grow: 1;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .table-header-title {
+    padding: 8px 12px;
+    border-bottom: 1px solid #21262d;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8b949e;
+    display: flex;
+    justify-content: space-between;
+    background: #161b22;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+    text-align: right;
+  }
+  th {
+    padding: 7px 10px;
+    color: #6e7681;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #21262d;
+    background: #0d1117;
+    font-weight: 600;
+  }
+  th:first-child, td:first-child { text-align: left; }
+  th:nth-child(2), td:nth-child(2) { text-align: left; }
+  td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #161b22;
+    color: #c9d1d9;
+    font-variant-numeric: tabular-nums;
+  }
+  tr.highlight {
+    background: rgba(234, 179, 8, 0.05);
+  }
+  tr.highlight td {
+    color: #f0f6fc;
+  }
+  tr.highlight td.accent-cell {
+    color: #eab308;
+    font-weight: 700;
+  }
+  .text-muted { color: #6e7681; }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #21262d;
+    padding-top: 8px;
+    font-size: 10px;
+    color: #484f58;
+  }
+  .footer a { color: #8b949e; text-decoration: none; }
+  .footer-status {
+    color: #8b949e;
+  }
+  .footer-status span {
+    color: #eab308;
+  }
+</style>
+</head>
+<body>
+
+  <!-- Telemetry Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="system-title">
+        <span>●</span> TELEMETRY // NVIDIA GEFORCE RTX 3060 12GB (GA106 • 360 GB/s)
+      </div>
+      <div class="system-meta">
+        ENV: WSL2 UBUNTU 24.04 • CUDA 12.4 • PYTORCH 2.5.1 • vLLM 0.28.0
+      </div>
+    </div>
+    <div class="cmd-line">
+      <span>CMD: <code>vllm serve Qwen/Qwen2.5-7B-Instruct-AWQ --quantization awq --gpu-memory-utilization 0.85 --max-model-len 4096 --enable-prefix-caching</code></span>
+      <span>KERNEL: AutoAWQMarlinLinearMethod</span>
+    </div>
+  </div>
+
+  <!-- Metric Panels -->
+  <div class="grid-panels">
+    
+    <!-- Metric 1: Peak Throughput -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-label">Peak Client Throughput</div>
+        <div class="panel-source">awq_8b_results.json:L56</div>
+      </div>
+      <div class="panel-val accent">592.0 <span>tok/s</span></div>
+      <div class="panel-sub">
+        Active burst: 2,560 tok in 4.32s @ C=20<br>
+        <code>task-2127.log:L193</code>: 486.7 tok/s (10s window)
+      </div>
+    </div>
+
+    <!-- Metric 2: Prefix Caching -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-label">Prefix Cache Hit Rate</div>
+        <div class="panel-source">task-2127.log:L193</div>
+      </div>
+      <div class="panel-val accent">87.1<span>%</span></div>
+      <div class="panel-sub">
+        Radix-tree hit on 42-token shared prompt<br>
+        <code>loggers.py:L310</code> (prefix_caching_metrics)
+      </div>
+    </div>
+
+    <!-- Metric 3: Single-Stream P50 TTFT -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-label">Single-Stream P50 TTFT</div>
+        <div class="panel-source">awq_8b_results.json:L9</div>
+      </div>
+      <div class="panel-val">38.7 <span>ms</span></div>
+      <div class="panel-sub">
+        Mean ITL: 17.2 ms | Baseline: 57.2 tok/s<br>
+        <code>task-2127.log:L19</code>: FlashAttention-2 active
+      </div>
+    </div>
+
+    <!-- Metric 4: KV Cache Memory -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-label">GPU KV-Cache Pool</div>
+        <div class="panel-source">task-2127.log:L38</div>
+      </div>
+      <div class="panel-val">67,440 <span>tok</span></div>
+      <div class="panel-sub">
+        Weights: 5.29 GiB (L28) | KV pool: 3.6 GiB (L37)<br>
+        <code>task-2127.log:L193</code>: 3.4% peak usage
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Table Panel -->
+  <div class="table-panel">
+    <div class="table-header-title">
+      <span>CONCURRENCY SCALING SWEEP (20 REQUESTS / TIER • MAX_TOKENS: 128 • PROMPT: 42 TOKENS)</span>
+      <span>HARNESS: benchmark_awq_8b.py</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Completed</th>
+          <th>Tokens Generated</th>
+          <th>Wall Time</th>
+          <th>Throughput</th>
+          <th>P50 TTFT</th>
+          <th>P90 TTFT</th>
+          <th>P99 TTFT</th>
+          <th>Mean ITL</th>
+          <th>Scaling Factor</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1 stream</td>
+          <td>20 / 20 (100%)</td>
+          <td>2,555 tok</td>
+          <td>44.69 s</td>
+          <td>57.2 tok/s</td>
+          <td>38.7 ms</td>
+          <td>89.0 ms</td>
+          <td>217.9 ms</td>
+          <td>17.2 ms</td>
+          <td class="text-muted">1.00x</td>
+        </tr>
+        <tr>
+          <td>5 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td>2,555 tok</td>
+          <td>9.90 s</td>
+          <td>258.0 tok/s</td>
+          <td>70.5 ms</td>
+          <td>634.6 ms</td>
+          <td>634.8 ms</td>
+          <td>17.9 ms</td>
+          <td>4.51x</td>
+        </tr>
+        <tr>
+          <td>10 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td>2,560 tok</td>
+          <td>5.38 s</td>
+          <td>476.1 tok/s</td>
+          <td>184.4 ms</td>
+          <td>232.7 ms</td>
+          <td>235.9 ms</td>
+          <td>19.5 ms</td>
+          <td>8.32x</td>
+        </tr>
+        <tr>
+          <td>15 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td>2,560 tok</td>
+          <td>5.67 s</td>
+          <td>451.2 tok/s</td>
+          <td>237.5 ms</td>
+          <td>239.8 ms</td>
+          <td>240.1 ms</td>
+          <td>21.1 ms</td>
+          <td>7.89x</td>
+        </tr>
+        <tr class="highlight">
+          <td class="accent-cell">20 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td>2,560 tok</td>
+          <td>4.32 s</td>
+          <td class="accent-cell">592.0 tok/s</td>
+          <td>470.9 ms</td>
+          <td>481.4 ms</td>
+          <td>482.5 ms</td>
+          <td>30.2 ms</td>
+          <td class="accent-cell">10.35x</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-status">
+      RUN ARTIFACTS: <span>awq_8b_results.json</span> • <span>task-2127.log</span> • GIT COMMIT: <code>356ceac</code>
+    </div>
+    <div>
+      LAB: AI Systems Lab • REPRODUCIBLE BENCHMARK HARNESS • SHARVIN NEVE
+    </div>
+  </div>
+
+</body>
+</html>
