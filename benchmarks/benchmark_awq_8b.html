@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>8B AWQ vLLM High-Concurrency Benchmark — RTX 3060 12GB</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #06090e;
+    color: #f0f6fc;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    padding: 32px;
+    width: 1200px;
+    height: 675px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #21262d;
+    padding-bottom: 16px;
+  }
+  .title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .terminal-dots {
+    display: flex;
+    gap: 6px;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-red { background: #ff5f56; }
+  .dot-yellow { background: #ffbd2e; }
+  .dot-green { background: #27c93f; }
+  .cmd-title {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: #58a6ff;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+  }
+  .badge {
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .badge-primary {
+    background: rgba(56, 189, 248, 0.12);
+    border-color: #38bdf8;
+    color: #38bdf8;
+  }
+  .badge-green {
+    background: rgba(52, 211, 153, 0.12);
+    border-color: #34d399;
+    color: #34d399;
+  }
+
+  /* Metric Cards */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 16px 0;
+  }
+  .metric-card {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+  }
+  .metric-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #8b949e;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .metric-val {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    line-height: 1.1;
+  }
+  .val-cyan { color: #38bdf8; }
+  .val-green { color: #34d399; }
+  .val-yellow { color: #fbbf24; }
+  .val-purple { color: #c084fc; }
+  .metric-sub {
+    font-size: 11px;
+    color: #6e7681;
+    margin-top: 6px;
+  }
+
+  /* Benchmark Table */
+  .table-container {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 12px;
+  }
+  th {
+    background: #161b22;
+    color: #8b949e;
+    text-align: left;
+    padding: 10px 14px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid #21262d;
+  }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #161b22;
+    color: #c9d1d9;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #161b22; }
+  .highlight-row {
+    background: rgba(56, 189, 248, 0.06);
+    font-weight: 700;
+  }
+  .highlight-row td { color: #f0f6fc; }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #21262d;
+    padding-top: 12px;
+    font-size: 11px;
+    color: #6e7681;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+  }
+  .footer-left { display: flex; gap: 16px; }
+  .footer-right { color: #58a6ff; font-weight: 600; }
+</style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="title-group">
+      <div class="terminal-dots">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+      </div>
+      <div class="cmd-title">$ python benchmark_awq_8b.py --tiers 1,5,10,15,20 --model Qwen2.5-7B-AWQ</div>
+    </div>
+    <div class="badges">
+      <div class="badge badge-primary">RTX 3060 12GB (Ampere)</div>
+      <div class="badge">Marlin W4A16 GEMM</div>
+      <div class="badge badge-green">vLLM 0.28.0 + FlashAttention-2</div>
+    </div>
+  </div>
+
+  <!-- Metric Cards -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-label">Peak System Throughput</div>
+      <div class="metric-val val-cyan">814.8 <span style="font-size:16px;">tok/s</span></div>
+      <div class="metric-sub">Sustained at 20 concurrent streams</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Single-Stream P50 TTFT</div>
+      <div class="metric-val val-green">25.7 <span style="font-size:16px;">ms</span></div>
+      <div class="metric-sub">Fast time-to-first-token under zero queue</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Prefix Cache Hit Rate</div>
+      <div class="metric-val val-yellow">86.8<span style="font-size:16px;">%</span></div>
+      <div class="metric-sub">Automatic Prefix Caching (APC) active</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">KV-Cache Pool Size</div>
+      <div class="metric-val val-purple">67,440 <span style="font-size:16px;">tok</span></div>
+      <div class="metric-sub">3.6 GB allocated | 100/100 requests success</div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Concurrency</th>
+          <th>Completed</th>
+          <th>Throughput (tok/s)</th>
+          <th>P50 TTFT</th>
+          <th>P90 TTFT</th>
+          <th>Mean ITL</th>
+          <th>Scaling Efficiency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1 stream</td>
+          <td>20 / 20 (100%)</td>
+          <td style="color:#58a6ff;">67.0 tok/s</td>
+          <td>25.7 ms</td>
+          <td>34.4 ms</td>
+          <td>14.6 ms</td>
+          <td style="color:#8b949e;">1.0x baseline</td>
+        </tr>
+        <tr>
+          <td>5 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td style="color:#58a6ff;">303.5 tok/s</td>
+          <td>53.8 ms</td>
+          <td>70.0 ms</td>
+          <td>16.1 ms</td>
+          <td style="color:#34d399;">4.5x scaling</td>
+        </tr>
+        <tr>
+          <td>10 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td style="color:#58a6ff;">292.1 tok/s</td>
+          <td>2,312.2 ms</td>
+          <td>4,520.9 ms</td>
+          <td>16.4 ms</td>
+          <td style="color:#34d399;">4.4x scaling</td>
+        </tr>
+        <tr>
+          <td>15 streams</td>
+          <td>20 / 20 (100%)</td>
+          <td style="color:#58a6ff;">600.6 tok/s</td>
+          <td>139.6 ms</td>
+          <td>142.1 ms</td>
+          <td>16.1 ms</td>
+          <td style="color:#34d399;">9.0x scaling</td>
+        </tr>
+        <tr class="highlight-row">
+          <td style="color:#38bdf8; font-weight:800;">20 streams (Peak)</td>
+          <td style="color:#34d399;">20 / 20 (100%)</td>
+          <td style="color:#38bdf8; font-weight:800;">814.8 tok/s</td>
+          <td>160.8 ms</td>
+          <td>192.4 ms</td>
+          <td>23.4 ms</td>
+          <td style="color:#38bdf8; font-weight:800;">12.2x scaling (Peak)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      <span>Env: Ubuntu 24.04 (WSL2) • CUDA 12.4 • PyTorch 2.5.1</span>
+      <span>Engine: vLLM Continuous Batching + PagedAttention</span>
+    </div>
+    <div class="footer-right">
+      Empirical Systems Lab • Sharvin Neve (Guts1005)
+    </div>
+  </div>
+
+</body>
+</html>
