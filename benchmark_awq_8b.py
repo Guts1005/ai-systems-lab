@@ -39,9 +39,18 @@ async def send_stream_request(client: httpx.AsyncClient, url: str, model: str, p
             async for line in response.aiter_lines():
                 now = time.perf_counter()
                 if line.startswith("data: ") and line != "data: [DONE]":
-                    if first_token_time is None:
-                        first_token_time = now
-                    token_timestamps.append(now)
+                    try:
+                        chunk_data = json.loads(line[6:].strip())
+                        choices = chunk_data.get("choices", [])
+                        if choices:
+                            delta = choices[0].get("delta", {})
+                            content = delta.get("content")
+                            if content:  # Only count actual generated content tokens
+                                if first_token_time is None:
+                                    first_token_time = now
+                                token_timestamps.append(now)
+                    except json.JSONDecodeError:
+                        continue
                     
         end_time = time.perf_counter()
         total_time = end_time - start_time
