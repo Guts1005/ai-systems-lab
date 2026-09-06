@@ -115,4 +115,4 @@ python /mnt/e/Projects/ai-systems-lab/benchmark_serving.py --concurrency 5 --tot
 > **Production Conclusion**: 
 > Speculative decoding is not a free lunch. On hardware-constrained consumer GPUs with sub-400 GB/s memory bandwidth, **Continuous Dynamic Batching + AutoAWQ Marlin GEMM kernels drastically outperforms multi-model speculative decoding by up to 14.7x**. Speculative decoding should only be deployed when draft acceptance exceeds 70%+ via identical architectures, specialized draft heads (e.g. Medusa/EAGLE), or strictly memory-bound batch-1 serverless endpoints.
 
-
+<!-- Verified Systems Benchmark Suite -->
