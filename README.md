@@ -108,8 +108,8 @@ python /mnt/e/Projects/ai-systems-lab/benchmark_serving.py --concurrency 5 --tot
 3. **Memory Bus Trashing (360 GB/s Bottleneck)**:
    * Standard continuous batching loads the 7B AWQ weights once per step and amortizes them across the batch using Marlin Tensor Core kernels.
    * Speculative decoding forced the memory bus to alternate sequentially between loading unquantized 0.5B FP16 weights ($K$ times) and then loading the 7B AWQ weights, thrashing L2 cache and saturating the 360 GB/s bus.
-4. **41.2% KV-Cache VRAM Tax**:
-   * Loading both the Target (5.19 GiB) and Draft (0.92 GiB) models shrank the PagedAttention KV pool from **67,440 tokens down to 39,680 tokens**.
+4. **38.1% KV-Cache VRAM Tax**:
+   * Loading both the Target (5.19 GiB) and Draft (0.92 GiB) models shrank the PagedAttention KV pool from **67,440 tokens down to 41,728 tokens** (a 38.1% capacity penalty).
    * On consumer hardware, reserving VRAM for a draft model directly cannibalizes the concurrency pool needed for multi-tenant batching.
 
 > **Production Conclusion**: 
